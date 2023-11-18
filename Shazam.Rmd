@@ -21,9 +21,38 @@ head(data)
 ```
 
 ```{r}
-selected_columns <- data[, c('danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'liveness_%', 'speechiness_%', 'key')]
+library(dplyr)
 
-selected_columns$color <- as.factor(selected_columns$key)
+# Group by artist and count the number of songs
+artist_counts <- data %>%
+  group_by(artist.s._name) %>%
+  summarise(num_songs = n()) %>%
+  arrange(desc(num_songs))
 
-pairs(selected_columns[, 1:7], col = selected_columns$color)
+# Select the top 10 artists
+top_artists <- head(artist_counts, 10)
+
+# Print the top artists
+print(top_artists)
+```
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Assuming data is your data frame
+# Group by artist and count the number of songs
+artist_counts <- data %>%
+  group_by(artist.s._name) %>%
+  summarise(num_songs = n()) %>%
+  arrange(desc(num_songs))
+
+# Select the top 10 artists
+top_artists <- head(artist_counts, 10)
+
+# Plot
+ggplot(top_artists, aes(x = reorder(artist.s._name, -num_songs), y = num_songs, fill = artist.s._name)) +
+  geom_bar(stat = 'identity') +
+  theme_minimal() +
+  labs(x = 'Artist(s) Name', y = 'Number of Songs', title = 'Top 10 Artists with Most Songs') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
