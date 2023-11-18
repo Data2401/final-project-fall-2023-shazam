@@ -13,7 +13,7 @@ library(readr)
 ```
 
 ```{r}
-data <- read.csv("/Users/shahbazabdullahmagsi/Downloads/spotify-2023.csv")
+data <- read.csv("spotify-2023.csv")
 ```
 
 ```{r}
@@ -21,4 +21,9 @@ head(data)
 ```
 
 ```{r}
+selected_columns <- data[, c('danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'liveness_%', 'speechiness_%', 'key')]
+
+selected_columns$color <- as.factor(selected_columns$key)
+
+pairs(selected_columns[, 1:7], col = selected_columns$color)
 ```
