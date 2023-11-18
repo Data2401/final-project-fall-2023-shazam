@@ -51,7 +51,7 @@ ggplot(top_artists, aes(x = reorder(artist.s._name, -num_songs), y = num_songs, 
 selected_artists <- c("Taylor Swift", "Drake, 21 Savage")
 selected_data <- data %>% filter(artist.s._name %in% selected_artists)
 
-# Rank the songs by stream_count for each artist
+# Ranking the songs by stream_count for each artist
 ranked_data <- selected_data %>%
   group_by(artist.s._name) %>%
   arrange(desc(streams)) %>%
@@ -64,4 +64,38 @@ ggplot(ranked_data, aes(x = reorder(track_name, streams), y = streams, fill = ar
   theme_minimal() +
   labs(x = 'Song Name', y = 'Stream Count', title = 'Top 5 Streamed Songs Comparison') +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+selected_data <- data %>% filter(artist.s._name %in% c("Taylor Swift", "Drake, 21 Savage"))
+
+selected_data$streams <- as.numeric(selected_data$streams)
+
+most_streamed_taylor <- selected_data %>%
+  filter(artist.s._name == "Taylor Swift") %>%
+  arrange(desc(streams)) %>%
+  slice_head(n = 1)
+
+most_streamed_drake_21savage <- selected_data %>%
+  filter(artist.s._name == "Drake, 21 Savage") %>%
+  arrange(desc(streams)) %>%
+  slice_head(n = 1)
+
+combined_most_streamed <- bind_rows(most_streamed_taylor, most_streamed_drake_21savage)
+
+total_streams <- sum(combined_most_streamed$streams)
+
+combined_most_streamed <- combined_most_streamed %>%
+  mutate(percentage = streams / total_streams * 100)
+
+ggplot(combined_most_streamed, aes(x = "", y = percentage, fill = artist.s._name, label = paste0(track_name, "\n", round(percentage, 1), "%"))) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  theme_void() +
+  labs(title = "Most Streamed Songs", fill = "Artist") +
+  scale_fill_manual(values = c("Taylor Swift" = "light pink", "Drake, 21 Savage" = "light blue")) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_legend(ncol = 2, title.position = "top", title.hjust = 0.5)) +
+  geom_text(aes(label = ""))
+
 ```
