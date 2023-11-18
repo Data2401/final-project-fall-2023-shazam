@@ -1,0 +1,24 @@
+---
+title: "FINAL PROJECT"
+output: html_document
+date: "2023-11-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+```
+
+```{r}
+data <- read.csv("/Users/shahbazabdullahmagsi/Downloads/spotify-2023.csv")
+```
+
+```{r}
+head(data)
+```
+
+```{r}
+```
