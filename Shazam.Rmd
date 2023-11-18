@@ -48,33 +48,20 @@ ggplot(top_artists, aes(x = reorder(artist.s._name, -num_songs), y = num_songs, 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 ```{r}
-selected_artists <- c("Taylor Swift", "Drake", "21 Savage")
+selected_artists <- c("Taylor Swift", "Drake, 21 Savage")
 selected_data <- data %>% filter(artist.s._name %in% selected_artists)
 
-# Separate datasets for Taylor Swift and Drake/21 Savage
-taylor_swift_data <- selected_data %>%
-  filter(artist.s._name == "Taylor Swift") %>%
+# Rank the songs by stream_count for each artist
+ranked_data <- selected_data %>%
+  group_by(artist.s._name) %>%
   arrange(desc(streams)) %>%
   mutate(rank = row_number()) %>%
   filter(rank <= 5)
 
-drake_21savage_data <- selected_data %>%
-  filter(artist.s._name %in% c("Drake", "21 Savage")) %>%
-  arrange(artist.s._name, desc(streams)) %>%
-  group_by(artist.s._name, track_name) %>%
-  summarize(streams = sum(streams)) %>%
-  group_by(artist.s._name) %>%
-  mutate(rank = row_number()) %>%
-  filter(rank <= 5)
-
-# Combine the datasets
-combined_data <- bind_rows(taylor_swift_data, drake_21savage_data)
-
 # Plot
-ggplot(combined_data, aes(x = reorder(track_name, streams), y = streams, fill = artist.s._name)) +
+ggplot(ranked_data, aes(x = reorder(track_name, streams), y = streams, fill = artist.s._name)) +
   geom_col(position = "dodge") +
   theme_minimal() +
   labs(x = 'Song Name', y = 'Stream Count', title = 'Top 5 Streamed Songs Comparison') +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  facet_grid(. ~ artist.s._name, scales = "free_y")
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
