@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(readr)
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
@@ -21,38 +23,58 @@ head(data)
 ```
 
 ```{r}
-library(dplyr)
-
-# Group by artist and count the number of songs
 artist_counts <- data %>%
   group_by(artist.s._name) %>%
   summarise(num_songs = n()) %>%
   arrange(desc(num_songs))
 
-# Select the top 10 artists
 top_artists <- head(artist_counts, 10)
 
-# Print the top artists
 print(top_artists)
 ```
 ```{r}
-library(dplyr)
-library(ggplot2)
-
-# Assuming data is your data frame
-# Group by artist and count the number of songs
 artist_counts <- data %>%
   group_by(artist.s._name) %>%
   summarise(num_songs = n()) %>%
   arrange(desc(num_songs))
 
-# Select the top 10 artists
 top_artists <- head(artist_counts, 10)
 
-# Plot
 ggplot(top_artists, aes(x = reorder(artist.s._name, -num_songs), y = num_songs, fill = artist.s._name)) +
-  geom_bar(stat = 'identity') +
+  geom_col() +
+  geom_text(aes(label = num_songs), position = position_stack(vjust = 0.5), size = 3, color = 'black') +
   theme_minimal() +
   labs(x = 'Artist(s) Name', y = 'Number of Songs', title = 'Top 10 Artists with Most Songs') +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+selected_artists <- c("Taylor Swift", "Drake", "21 Savage")
+selected_data <- data %>% filter(artist.s._name %in% selected_artists)
+
+# Separate datasets for Taylor Swift and Drake/21 Savage
+taylor_swift_data <- selected_data %>%
+  filter(artist.s._name == "Taylor Swift") %>%
+  arrange(desc(streams)) %>%
+  mutate(rank = row_number()) %>%
+  filter(rank <= 5)
+
+drake_21savage_data <- selected_data %>%
+  filter(artist.s._name %in% c("Drake", "21 Savage")) %>%
+  arrange(artist.s._name, desc(streams)) %>%
+  group_by(artist.s._name, track_name) %>%
+  summarize(streams = sum(streams)) %>%
+  group_by(artist.s._name) %>%
+  mutate(rank = row_number()) %>%
+  filter(rank <= 5)
+
+# Combine the datasets
+combined_data <- bind_rows(taylor_swift_data, drake_21savage_data)
+
+# Plot
+ggplot(combined_data, aes(x = reorder(track_name, streams), y = streams, fill = artist.s._name)) +
+  geom_col(position = "dodge") +
+  theme_minimal() +
+  labs(x = 'Song Name', y = 'Stream Count', title = 'Top 5 Streamed Songs Comparison') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  facet_grid(. ~ artist.s._name, scales = "free_y")
 ```
