@@ -12,6 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(dplyr)
 library(ggplot2)
+library(gridExtra)
+library(scales)
+
 ```
 
 ```{r}
@@ -51,14 +54,12 @@ ggplot(top_artists, aes(x = reorder(artist.s._name, -num_songs), y = num_songs, 
 selected_artists <- c("Taylor Swift", "Drake, 21 Savage")
 selected_data <- data %>% filter(artist.s._name %in% selected_artists)
 
-# Ranking the songs by stream_count for each artist
 ranked_data <- selected_data %>%
   group_by(artist.s._name) %>%
   arrange(desc(streams)) %>%
   mutate(rank = row_number()) %>%
   filter(rank <= 5)
 
-# Plot
 ggplot(ranked_data, aes(x = reorder(track_name, streams), y = streams, fill = artist.s._name)) +
   geom_col(position = "dodge") +
   theme_minimal() +
@@ -88,7 +89,7 @@ total_streams <- sum(combined_most_streamed$streams)
 combined_most_streamed <- combined_most_streamed %>%
   mutate(percentage = streams / total_streams * 100)
 
-ggplot(combined_most_streamed, aes(x = "", y = percentage, fill = artist.s._name, label = paste0(track_name, "\n", round(percentage, 1), "%"))) +
+ggplot(combined_most_streamed, aes(x = "", y = percentage, fill = artist.s._name)) +
   geom_bar(stat = "identity", width = 1) +
   coord_polar("y") +
   theme_void() +
@@ -96,6 +97,96 @@ ggplot(combined_most_streamed, aes(x = "", y = percentage, fill = artist.s._name
   scale_fill_manual(values = c("Taylor Swift" = "light pink", "Drake, 21 Savage" = "light blue")) +
   theme(legend.position = "bottom") +
   guides(fill = guide_legend(ncol = 2, title.position = "top", title.hjust = 0.5)) +
-  geom_text(aes(label = ""))
+  geom_text(aes(label = paste0(track_name, "\n", round(percentage, 1), "%")),
+            position = position_stack(vjust = 0.5))
+```
 
+
+```{r}
+taylor_swift_data <- data %>%
+  filter(artist.s._name == "Taylor Swift")
+
+head(taylor_swift_data)
+```
+
+```{r}
+drake_21_data <- data %>%
+  filter(artist.s._name == "Drake, 21 Savage")
+
+head(drake_21_data)
+```
+```{r}
+plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = factor(released_month, levels = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))) +
+  geom_bar(fill = "darkblue") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5) +
+  labs(title = "Taylor Swift Song Releases by Month",
+       x = "Month",
+       y = "Number of Songs Released") +
+  theme_minimal()
+
+plot_drake_21 <- ggplot(drake_21_data, aes(x = factor(released_month, levels = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))) +
+  geom_bar(fill = "darkgreen", width = 0.3) + 
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, position = position_dodge(width = 0.5)) +
+  labs(title = "Drake and 21 Savage Song Releases by Month",
+       x = "Month",
+       y = "Number of Songs Released") +
+  theme_minimal()
+
+grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
+```
+
+
+```{r}
+taylor_swift_data$streams <- as.numeric(taylor_swift_data$streams)
+drake_21_data$streams <- as.numeric(drake_21_data$streams)
+
+ggplot() +
+  geom_line(data = taylor_swift_data, aes(x = released_year, y = streams, group = 1, color = "Taylor Swift")) +
+  geom_line(data = drake_21_data, aes(x = released_year, y = streams, group = 1, color = "Drake and 21 Savage")) +
+  labs(title = "Streams Trend Over Time",
+       x = "Year",
+       y = "Streams") +
+  theme_minimal() +
+  scale_color_manual(values = c("Taylor Swift" = "blue", "Drake and 21 Savage" = "red")) +
+  scale_y_continuous(labels = scales::comma) # Format y-axis labels
+
+scale_y_continuous(labels = scales::label_number_si()) # Formats numbers to millions (e.g., 1M)
+
+```
+
+
+```{r}
+plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = danceability_., y = streams)) +
+  geom_point() +
+  labs(title = "Taylor Swift's Songs",
+       x = "Danceability",
+       y = "Streams") +
+  theme_minimal()
+
+plot_drake_21 <- ggplot(drake_21_data, aes(x = danceability_., y = streams)) +
+  geom_point() +
+  labs(title = "Drake & 21 Savage Songs",
+       x = "Danceability",
+       y = "Streams") +
+  theme_minimal()
+
+grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
+```
+
+```{r}
+plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = energy_., y = streams)) +
+  geom_point() +
+  labs(title = "Taylor Swift's Songs",
+       x = "Energy",
+       y = "Streams") +
+  theme_minimal()
+
+plot_drake_21 <- ggplot(drake_21_data, aes(x = energy_., y = streams)) +
+  geom_point() +
+  labs(title = "Drake & 21 Savage Songs",
+       x = "Energy",
+       y = "Streams") +
+  theme_minimal()
+
+grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
 ```
