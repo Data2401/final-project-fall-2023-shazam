@@ -57,22 +57,41 @@ For music insiders and fans alike (like us), our analysis offers a concise, data
 
 ---
 
+# Question time!!!
+
+![](https://media.tenor.com/io59GRNNh_YAAAAd/cat-tired.gif)
+
+---
+
+In this project, we examine Spotify's API data to analyze the factors behind the top artist's presence in the top streams from 2010 to 2023. Our dataset is curated with the following key features:
+
+- artist.s._name: Identifies the artist, crucial for tracking performance across songs.
+- track_name: The song title, central to content analysis.
+- streams: The play count, reflecting popularity.
+- danceability_, energy_: Metrics representing a song's rhythm and vigor.
+- released_year, released_month: Timing of release, important for understanding trends and seasonal impacts.
+- charts, playlist: Ranking how many playlists/songs an artist is in to understand the effects of how it correlates to popularity
+
+This data will help us understand the qualities that have propelled the top artists's music to the forefront of the digital music scene on Spotify.
+
+---
+
+# Pre-processing and Analysis:
+
+In our exploration of Spotify's musical landscape, we transformed a vast dataset into a concise narrative of what drives song success:
+
+**Data Refinement**: We tidied up the dataset, discarding duplicates and standardizing data types to ensure clarity and accuracy.
+
+**Selective Data**: We distilled the information from a complex 24 columns down to the most impactful ones, streamlining our analysis.
+
+**Top Tracks Analysis**: Our gaze centered on the top 10 artists that had the most songs in the dataset, then focused on the top and the bottom of the 10.
+
+**Engagement Insights**: Delving into streams and song features, we sought to understand the harmony between a track's attributes and its popularity.
 
 
-```{r}
-head(data)
-```
+---
 
-```{r}
-artist_counts <- data %>%
-  group_by(artist.s._name) %>%
-  summarise(num_songs = n()) %>%
-  arrange(desc(num_songs))
-
-top_artists <- head(artist_counts, 10)
-
-print(top_artists)
-```
+# WHO ARE THE TOP ARTISTS WITH MOST SONGS?
 ```{r}
 artist_counts <- data %>%
   group_by(artist.s._name) %>%
@@ -88,8 +107,16 @@ ggplot(top_artists, aes(x = reorder(artist.s._name, -num_songs), y = num_songs, 
   labs(x = 'Artist(s) Name', y = 'Number of Songs', title = 'Top 10 Artists with Most Songs') +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+It is clear to see that Taylor Swift dominates the charts with 34 songs, and Drake & 21 Savage have only 8 songs. Go swifties!!!
+
+---
+
+We chose to compare our top and bottom artists, Taylor Swift and Drake/21 Savage, to analyze **what it takes to hit the charts so many times!**
+
 ![](https://www.billboard.com/wp-content/uploads/2022/11/taylor-swift-21-savage-drake-billboard-1548.jpg?w=942&h=623&crop=1)
 
+**What are the stream counts for each of their top 5 songs, and how significant are the differences in these counts?**
 
 ```{r}
 selected_artists <- c("Taylor Swift", "Drake, 21 Savage")
@@ -107,6 +134,12 @@ ggplot(ranked_data, aes(x = reorder(track_name, streams), y = streams, fill = ar
   labs(x = 'Song Name', y = 'Stream Count', title = 'Top 5 Streamed Songs Comparison') +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+Taylor Swift's lowest-streamed song in the top 5 approaches Drake/21 Savage's highest-performing song at around 618 million streams, highlighting a significant variance in her top songs' stream counts, with the highest nearing 1 billion."
+
+---
+
+# How does the difference appear when comparing Taylor Swift's and Drake/21 Savage's top-streamed song?
 
 ```{r}
 selected_data <- data %>% filter(artist.s._name %in% c("Taylor Swift", "Drake, 21 Savage"))
@@ -142,20 +175,21 @@ ggplot(combined_most_streamed, aes(x = "", y = percentage, fill = artist.s._name
             position = position_stack(vjust = 0.5))
 ```
 
+Our statistics show that 68.7% of listeners chose Taylor Swift's 'Blank Space' over Drake and 21 Savage's 'Jimmy Cooks', chosen by 31.3%, highlighting the disparity in stream counts.
+
+---
+
+# Do temporal changes in the year influence top song release?
 
 ```{r}
 taylor_swift_data <- data %>%
   filter(artist.s._name == "Taylor Swift")
 
-head(taylor_swift_data)
-```
-
-```{r}
 drake_21_data <- data %>%
   filter(artist.s._name == "Drake, 21 Savage")
 
-head(drake_21_data)
 ```
+
 ```{r}
 plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = factor(released_month, levels = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))) +
   geom_bar(fill = "skyblue") +
@@ -176,6 +210,12 @@ plot_drake_21 <- ggplot(drake_21_data, aes(x = factor(released_month, levels = 1
 grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
 ```
 
+Taylor Swift consistently releases top songs throughout the year, with a notable peak in the fall season, where she has released 17 top songs compared to Drake/21 Savage's 7 during the same period. 
+
+---
+
+# Have stream trends for both artists changed over time?
+
 
 ```{r}
 taylor_swift_data$streams <- as.numeric(taylor_swift_data$streams)
@@ -188,13 +228,16 @@ ggplot() +
        x = "Year",
        y = "Streams") +
   theme_minimal() +
-  scale_color_manual(values = c("Taylor Swift" = "blue", "Drake and 21 Savage" = "red")) +
-  scale_y_continuous(labels = scales::comma) # Format y-axis labels
-
-scale_y_continuous(labels = scales::label_number_si()) # Formats numbers to millions (e.g., 1M)
-
+  scale_color_manual(values = c("Taylor Swift" = "blue", "Drake and 21 Savage" = "red"))
 ```
 
+Taylor Swift's streaming numbers have varied over the past decade, peaking in 2014 and dipping in 2019 (Major L for the swifties :p) , in contrast to Drake/21 Savage's consistent stream counts since their late 2022 album release."
+
+---
+
+# Does higher dancebility in a song lead to a higher stream count?
+
+![](https://media.tenor.com/nkEfyODuk1oAAAAC/istorik-dancing-cat.gif)
 
 ```{r}
 plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = danceability_., y = streams)) +
@@ -213,6 +256,14 @@ plot_drake_21 <- ggplot(drake_21_data, aes(x = danceability_., y = streams)) +
 
 grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
 ```
+
+
+Interestingly, not really! Having a higher danceability in a song does not necessarily correlate with higher stream counts; both Taylor Swift and Drake/21 Savage have songs with high danceability, yet Drake/21 Savage do not achieve the same streaming success as Taylor.
+
+---
+
+# Is there a correlation between valence/mood and danceability?
+
 ```{r}
 taylor_swift_data$artist <- 'Taylor Swift'
 drake_21_data$artist <- 'Drake and 21 Savage'
@@ -227,6 +278,18 @@ ggplot(combined_data, aes(x = danceability_., y = valence_., color = artist)) +
   theme_minimal() +
   scale_color_manual(values = c("Taylor Swift" = "blue", "Drake and 21 Savage" = "red"))
 ```
+
+On average, about 60% of Taylor's tracks invite you to dance like no one's watching!
+Ranging from 34% to a high of 80%, her songs offer a lil' something for both wallflowers and dance floor divas. 
+
+Drake/21 Savage's songs skew more towards a higher danceability, which shows an uplifted mood.
+
+According to the graph, Danceability and Valence show a mild positive correlation, suggesting that songs which are more danceable might also convey a more positive mood.
+
+---
+
+# Does a higher energy level in a song lead to a higher stream count?
+
 ```{r}
 plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = energy_., y = streams)) +
   geom_point() +
@@ -245,7 +308,13 @@ plot_drake_21 <- ggplot(drake_21_data, aes(x = energy_., y = streams)) +
 grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
 ```
 
+Based on our analysis, a medium energy level in songs often lead to a higher stream count. Taylors songs are varied in energy, from melancholic to hype songs - theres something for everyone! 
 
+Drake/21 Savage's songs sit in the 55-70 range in energy levels, so there is not much diversity in listeners.
+
+---
+
+# Does the Beats Per Minute (BPM) influence a song's likelihood of becoming a top hit?
 
 ```{r}
 plot_taylor_swift <- ggplot(taylor_swift_data, aes(x = bpm)) +
@@ -265,12 +334,37 @@ plot_drake_21 <- ggplot(drake_21_data, aes(x = bpm)) +
 grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
 ```
 
+Taylor Swift's hit frequency leans towards lower BPMs (100-120), with a left-skewed distribution indicating a prevalence of top songs with slower tempos. Conversely, Drake/21 Savage tend to favor higher BPMs (130-150), which may reflect a need for greater tempo variety in their music offerings.
+
+---
+
+# Does featuring a top hit in a Spotify playlist correlate with increased stream counts?
+
+
 ```{r}
 correlation <- cor(taylor_swift_data$in_spotify_playlists, taylor_swift_data$streams)
 
 ggplot(taylor_swift_data, aes(x = in_spotify_playlists, y = streams)) +
   geom_point(color = 'blue', alpha = 0.5) +
   labs(x = 'Number of Spotify Playlists', y = 'Total Number of Streams',
-       title = paste('Correlation between Spotify Playlists and Streams (Correlation Coefficient:', round(correlation, 2), ')')) +
+       title = paste('Correlation between Spotify Playlists and Streams for Taylor Swift (Correlation Coefficient:', round(correlation, 2), ')')) +
   theme_minimal()
 ```
+![](https://media.makeameme.org/created/yes-sir-59f9cd.jpg)
+
+As expected, the number of playlists a top hit is featured in tends to correlate with higher streaming numbers.
+
+---
+
+# SUMMMARY
+
+The aim was to decipher the elements contributing to Taylor Swift's dominance on Spotify's streaming charts and how they compare with Drake/21 Savage's performance.
+
+We harnessed Spotify's API data, focusing on a set of defined metrics such as song features, release timing, and playlist inclusion to analyze trends and patterns in song popularity.
+
+Our analysis implies that versatility in music and strategic playlist placement may be key to streaming success. However, the research is limited to specific metrics and could be expanded to include broader factors for a more comprehensive understanding. Future analysis could benefit from including a wider array of artists and additional listener data to validate and extend these findings.
+
+**In conclusion, we found out what it takes to have so many top hits!**
+**Fall releases, lower BPMs, mild energy levels, higher danceability, and higher frequency in spotify playlists often will lead to having a hit!**
+
+---
