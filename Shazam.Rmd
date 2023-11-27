@@ -266,5 +266,11 @@ grid.arrange(plot_taylor_swift, plot_drake_21, ncol = 2)
 ```
 
 ```{r}
+correlation <- cor(taylor_swift_data$in_spotify_playlists, taylor_swift_data$streams)
 
+ggplot(taylor_swift_data, aes(x = in_spotify_playlists, y = streams)) +
+  geom_point(color = 'blue', alpha = 0.5) +
+  labs(x = 'Number of Spotify Playlists', y = 'Total Number of Streams',
+       title = paste('Correlation between Spotify Playlists and Streams (Correlation Coefficient:', round(correlation, 2), ')')) +
+  theme_minimal()
 ```
